@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const companyAdminSchema = new Schema(
+export const userSchema = new Schema(
   {
     firstName: {
       type: String,
@@ -29,10 +29,15 @@ const companyAdminSchema = new Schema(
     role: {
       type: String,
       default: "companyAdmin",
+      enums: ["companyAdmin", "administrator", "driver", "staff"],
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    company: {
+      type: String,
+      default: "",
     },
   },
   {
@@ -45,8 +50,7 @@ const companyAdminSchema = new Schema(
   }
 );
 
-//Encrypt password using bcrypt
-companyAdminSchema.pre("save", async function (next) {
+userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
@@ -55,15 +59,14 @@ companyAdminSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-companyAdminSchema.methods.getSignedJwtToken = function () {
+userSchema.methods.getSignedJwtToken = function () {
   return jwt.sign({ id: this._id, email: this.email }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };
 
-//Match user entered password to hashed password in db
-companyAdminSchema.methods.matchPassword = async function (enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-export default model("companyAdmin", companyAdminSchema);
+export default model("User", userSchema);

@@ -1,4 +1,4 @@
-import * as CompanyAdmin from "../controllers/companyAdminController.js";
+import * as CompanyAdmin from "../controllers/userController.js";
 import express from "express";
 
 //middleware
@@ -8,9 +8,26 @@ const companyRouter = express.Router();
 
 companyRouter.post("/register", CompanyAdmin.registerAdmin);
 
-companyRouter.post(
-  "/super-admin-notification",
+companyRouter.get(
+  "/super-admin-notification",companyAdminAuth,
   CompanyAdmin.superAdminNotification
+);
+
+companyRouter.post(
+  "/accept",
+  companyAdminAuth,
+  CompanyAdmin.superAdminAcceptUser
+);
+
+companyRouter.put(
+  "/verify/:verifiedToken",
+  companyAdminAuth,
+  CompanyAdmin.verifyUser
+);
+
+companyRouter.post(
+  "/resend-token",
+  CompanyAdmin.resendVerificationToken
 );
 
 companyRouter.post("/login", CompanyAdmin.login);
@@ -24,5 +41,11 @@ companyRouter.post(
 );
 
 companyRouter.get("/my-profile", companyAdminAuth, CompanyAdmin.myProfile);
+
+companyRouter.post(
+  "/create-administrator",
+  companyAdminAuth,
+  CompanyAdmin.createAdministrator
+);
 
 export default companyRouter;

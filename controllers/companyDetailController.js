@@ -1,9 +1,9 @@
 import CompanyDetail from "../models/companyDetailModel.js";
-import CompanyAdmin from "../models/companyAdminModel.js";
+import User from "../models/user.js";
+import slugify from "slugify";
 
 export const registerCompany = async (req, res) => {
   try {
-    const admin = await CompanyAdmin.findOne({})
     const {
       name,
       logo,
@@ -16,6 +16,8 @@ export const registerCompany = async (req, res) => {
       telephone,
       timeZone,
     } = req.body;
+
+    const subDomain = `${slugify(name, { lower: true,remove: /[*+~.()'"!:@]/g })}.transportdek.com`;
 
     if (!firstAddress) {
       return res.status(400).json("Address line 1 is required");
@@ -42,9 +44,11 @@ export const registerCompany = async (req, res) => {
         error: "Use another company name",
       });
     }
+    const owner = req.User;
 
-    const company = new CompanyAdmin({
+    const company = new CompanyDetail({
       name,
+      subDomain,
       logo,
       firstAddress,
       secondAddress,
@@ -54,9 +58,17 @@ export const registerCompany = async (req, res) => {
       state,
       telephone,
       timeZone,
+      owner,
     });
 
     await company.save();
+    if (company) {
+      await User.findByIdAndUpdate(
+        req.User,
+        { company: subDomain },
+        { new: true }
+      );
+    }
 
     return res.status(201).json({
       msg: `${name} has been registered Successfully`,

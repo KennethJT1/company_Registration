@@ -1,25 +1,22 @@
 import { Schema, model } from "mongoose";
-import countries from "countries-list";
-import slugify from "slugify";
-
-import CompanyAdmin from "./companyAdminModel.js";
+import { countries } from "countries-list";
 
 const companyDetailSchema = new Schema(
   {
-    owner: { type: Schema.Types.ObjectId, required: true, ref: "CompanyAdmin" },
+    owner: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     name: {
       type: String,
       trim: true,
-      default: "",
+      required: true,
     },
     logo: {
       type: String,
       trim: true,
-      default: "",
     },
     subDomain: {
       type: String,
       unique: true,
+      required: true,
       index: true,
     },
     firstAddress: {
@@ -28,7 +25,6 @@ const companyDetailSchema = new Schema(
     },
     secondAddress: {
       type: String,
-      default: "",
     },
     city: {
       type: String,
@@ -58,7 +54,6 @@ const companyDetailSchema = new Schema(
     },
     timezone: {
       type: String,
-      default: "",
     },
   },
   {
@@ -70,15 +65,5 @@ const companyDetailSchema = new Schema(
     },
   }
 );
-
-companyDetailSchema.pre("save", function (next) {
-  if (!this.isModified("name")) {
-    return next();
-  }
-
-  this.subdomain = slugify(this.name, { lower: true }) + ".transportdek.com";
-
-  return next();
-});
 
 export default model("companyDetail", companyDetailSchema);

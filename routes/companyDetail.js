@@ -2,13 +2,13 @@ import express from "express";
 import * as Company from "../controllers/companyDetailController.js";
 
 //middleware
-import { companyAdminauth, superAdminAuth } from "../middlewares/auth.js";
+import { companyAdminAuth, superAdminAuth } from "../middlewares/auth.js";
 
 const companyDetailRouter = express.Router();
 
-companyRouter.post("/register", Company.registerCompany);
+companyDetailRouter.post("/register",companyAdminAuth, Company.registerCompany);
 
-// companyRouter.post(
+// companyDetailRouter.post(
 //   "/super-admin-notification",
 //   CompanyAdmin.superAdminNotification
 // );

@@ -4,7 +4,10 @@ import colours from "colors";
 import mongoose from "mongoose";
 import logger from "morgan";
 
-import companyAdmin from "./routes/companyAdmin.js";
+import user from "./routes/user.js";
+import companyDetail from "./routes/companyDetail.js";
+import driverRoute from "./routes/driver.js";
+import staff from "./routes/staff.js";
 
 const app = express();
 
@@ -24,7 +27,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(logger("dev"));
 
 //Routes
-app.use("/company", companyAdmin);
+app.use("/company", user);
+app.use("/company-setup", companyDetail);
+app.use("/driver", driverRoute);
+app.use("/staff", staff);
 
 //port
 const port = process.env.PORT || 4900;
