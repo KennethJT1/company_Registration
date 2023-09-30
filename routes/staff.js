@@ -2,19 +2,23 @@ import express from "express";
 import * as Staff from "../controllers/staffController.js";
 
 //middleware
-import { companyAdminAuth, superAdminAuth } from "../middlewares/auth.js";
+import { companyAdminAuth } from "../middlewares/auth.js";
 
 const staffRouter = express.Router();
 
 staffRouter.get("/autogenerate-password", Staff.autoGeneratePassword);
 
 staffRouter.post("/register", companyAdminAuth, Staff.register);
-staffRouter.get("/details", companyAdminAuth, Staff.primaryDetail);
+staffRouter.get(
+  "/details/:companyName/:_id",
+  companyAdminAuth,
+  Staff.primaryDetail
+);
 staffRouter.delete("/details/:id", companyAdminAuth, Staff.deleteDetail);
-
-// nonDriverRouter.post(
-//   "/super-admin-notification",
-//   CompanyAdmin.superAdminNotification
-// );
+staffRouter.patch(
+    "/details/:companyName/:_id",
+    companyAdminAuth,
+  Staff.updateDetail
+);
 
 export default staffRouter;

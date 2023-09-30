@@ -17,7 +17,10 @@ export const registerCompany = async (req, res) => {
       timeZone,
     } = req.body;
 
-    const subDomain = `${slugify(name, { lower: true,remove: /[*+~.()'"!:@]/g })}.transportdek.com`;
+    const subDomain = `${slugify(name, {
+      lower: true,
+      remove: /[*+~.()'"!:@]/g,
+    })}.transportdek.com`;
 
     if (!firstAddress) {
       return res.status(400).json("Address line 1 is required");
@@ -80,8 +83,98 @@ export const registerCompany = async (req, res) => {
   }
 };
 
-// export const registerCompany = async (req,res)=> {};
-// export const registerCompany = async (req,res)=> {};
+export const updateCompany = async (req, res) => {
+  try {
+    const { companyName, _id } = req.params;
+
+    const isUser = await User.findById(req.User);
+    if (isUser.role !== "companyAdmin") {
+      return res.status(403).json({
+        Error: "You are not allowed to edit company details",
+      });
+    } else if (isUser.company !== companyName) {
+      return res.status(403).json({
+        Error: "You need to be from the company's admin before you can edit",
+      });
+    }
+
+    const company = await CompanyDetail.findByIdAndUpdate(
+      { _id, subDomain: companyName },
+      { ...req.body },
+      { new: true }
+    );
+
+    if (company === null) {
+      return res.status(404).json({
+        Error: "Wrong Credentials",
+      });
+    }
+
+    return res.status(201).json({
+      Details: company,
+    });
+  } catch (error) {
+    console.log("Error", error);
+    return res.status(500).json({ Error: error.message });
+  }
+};
+
+export const removeCompany = async (req, res) => {
+  try {
+    const { companyName, _id } = req.params;
+
+    const isUser = await User.findById(req.User);
+    if (isUser.role !== "companyAdmin" && isUser.role !== "superAdmin") {
+      return res.status(403).json({
+        Error: "You are not allowed to remove this company",
+      });
+    } else if (isUser.role === "superAdmin") {
+      const company = await CompanyDetail.findOne({_id});
+      if (!company) {
+        return res.status(404).json({
+          Error: "Wrong Credentials",
+        });
+      }
+
+      const isRemoved = await CompanyDetail.deleteOne({_id});
+      if (isRemoved) {
+        await User.findByIdAndUpdate(
+          { _id: company.owner },
+          { company: "" },
+          { new: true }
+        );
+      }
+      return res.status(403).json({
+        msg: "Company successfully removed",
+      });
+    } else if (isUser.company !== companyName) {
+      return res.status(403).json({
+        Error: "You need to be from the company's admin before you can remove",
+      });
+    }
+
+    const company = await CompanyDetail.findByIdAndRemove(_id);
+    if (company === null) {
+      return res.status(404).json({
+        Error: "Wrong Credentials",
+      });
+    }
+
+    if (company) {
+      await User.findByIdAndUpdate(
+        { _id: isUser._id },
+        { company: "" },
+        { new: true }
+      );
+    }
+    return res.status(403).json({
+      msg: "Company successfully removed",
+    });
+  } catch (error) {
+    console.log("Error", error);
+    return res.status(500).json({ Error: error.message });
+  }
+};
 // export const registerCompany = async (req,res)=> {};
 // export const registerCompany = async (req,res)=> {};
 // export const registerCompany = async (req,res)=> {};
