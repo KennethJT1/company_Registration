@@ -15,6 +15,7 @@ const app = express();
 dotenv.config();
 
 //Connect to mongoDB
+mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("Database is connected to mongoDB...".blue))
